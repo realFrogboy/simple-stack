@@ -1,14 +1,15 @@
 #include "stack.h"
 
-Stack* stackCtor ()
-{
-    Stack* st = (Stack*) calloc (1, sizeof(Stack));
+stack_t* stackCtor(){
+    struct stack_t *st = (stack_t*)calloc(1, sizeof(stack_t));
 
     st->capacity = START_STACK_SIZE; 
     st->Size = 0;
 
-    st->data = (double*) calloc (st->capacity, sizeof(double));
-    accert(st->data);
+    st->data = (double*)calloc(st->capacity + 2, sizeof (double));
+    assert(st->data);
+
+    st->data++;
 
     return st;
 }
@@ -17,9 +18,9 @@ Stack* stackCtor ()
 //-----------------------------------------------------------------------------
 
 
-int stackPush (Stack* st, double value)
-{
-    accert(st);
+void stackPush(stack_t* st, double value){
+    assert(st);
+    assert(isfinite(value));
 
     if (st->Size >= st->capacity)
         reallocate (st, st->capacity * RESIZE_COEFFICIENT);
@@ -27,67 +28,45 @@ int stackPush (Stack* st, double value)
     *(st->data + st->Size) = value;
     
     st->Size++;
-
-    return 0;
 }
 
 
 //-----------------------------------------------------------------------------
 
 
-int stackPop (Stack* st)
-{
-    accert(st);
+void stackPop(stack_t* st){
+    assert(st);
 
     if ((st->Size <= st->capacity/RESIZE_COEFFICIENT) && (st->capacity != START_STACK_SIZE))
         reallocate (st, st->capacity/RESIZE_COEFFICIENT);
     
     --st->Size;
-
-    return 0;
 }
 
 
 //-----------------------------------------------------------------------------
 
 
-int stackDtor (Stack* st)
-{
-    accert(st);
+void stackDtor(stack_t* st){
+    assert(st);
 
-    free(st->data);
+    free (--st->data);
     free(st);
-
-    return 0;
 }
 
 
 //-----------------------------------------------------------------------------
 
 
-int reallocate (Stack* st, const size_t newSize) 
-{
-    accert(st);
+void reallocate(stack_t* st, const size_t newSize){
+    assert(st);
 
     st->capacity = newSize;
+    st->data--;
 
-    double* tmp = (double*) realloc (st->data, st->capacity * sizeof(double));
-    accert(tmp);
+    double *tmp = (double*) realloc (st->data, (st->capacity + 2) * sizeof(double));
+    assert(tmp);
 
     st->data = tmp;
-
-    return 0;
-}
-
-
-void prinStack (const Stack* st)
-{
-    accert(st);
-
-    for (unsigned num = 0; num < st->Size; num++)
-    {
-        printf ("%f\n", *(st->data + num));
-    }
-
-    printf ("%ld --- %ld\n", st->Size, st->capacity);
+    st->data++;
 }
